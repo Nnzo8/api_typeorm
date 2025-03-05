@@ -51,3 +51,16 @@ async function update(id, params){
     Object.assign(user, params);
     await user.save();
 }
+
+//deletes user by ID
+async function _delete(id) {
+    const user = await getUser(id);
+    await user.destroy();
+}
+
+//helper func
+async function getUser(id) {
+    const user = await db.User.findByPk(id);
+    if(!user) throw 'User not found';
+    return user;
+}
