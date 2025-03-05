@@ -1,4 +1,4 @@
-const bycrpt = require('bycrypt.js');
+const bycrypt = require('bycryptjs');
 const db = require('_helpers/db');
 
 module.exports = {

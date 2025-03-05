@@ -1,27 +1,31 @@
 const { DataTypes } = require('sequelize');
 
-module.exports = model; 
+// Export the model function
+module.exports = model;
 
-function model(sequelize){
+function model(sequelize) {
+    // Define model attributes (table columns)
     const attributes = {
-        email: { type: Datatypes.STRING, allowNull: false},
-        passwordHash: { type: Datatypes.STRING, allowNull: false },
-        title: { type: Datatypes.STRING, allowNull: false },
-        firstname: { type: Datatypes.STRING, allowNull: false },
-        lastname: { type: Datatypes.STRING, allowNull: false },
-        role:  { type: Datatypes.STRING, allowNull: false },
+        email: { type: DataTypes.STRING, allowNull: false },        // User email (required)
+        passwordHash: { type: DataTypes.STRING, allowNull: false }, // Hashed password (required)
+        title: { type: DataTypes.STRING, allowNull: false },        // User title
+        firstname: { type: DataTypes.STRING, allowNull: false },    // First name (required)
+        lastname: { type: DataTypes.STRING, allowNull: false },     // Last name (required)
+        role: { type: DataTypes.STRING, allowNull: false }          // User role (admin, user, etc.)
     };
 
+    // Define model options (default behaviors & scopes)
+    const options = {
+        defaultScope: {
+            // By default, exclude the passwordHash field from query results
+            attributes: { exclude: ['passwordHash'] }
+        },
+        scopes: {
+            // Custom scope to include passwordHash when explicitly requested
+            withHash: { attributes: {} }
+        }
+    };
 
-const options = {
-    defaultScope: {
-        //exclude password hash by default
-        attributes: { exclude: ['passwordHash']}
-    },
-    scopes: {
-        //include hash with this scope
-        withHash: { attributes: {}, }
-    }
-};
+    // Define and return the User model
     return sequelize.define('User', attributes, options);
-}   
+}
