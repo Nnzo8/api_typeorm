@@ -28,54 +28,56 @@ const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : 
 // Initialize database and start server
 const { host, port: dbPort, user, password, database } = config.database;
 
-createConnection({
-    type: 'mysql',
-    host,
-    port: dbPort,
-    username: user,
-    password,
-    database,
-    entities: [
-        __dirname + '/**/*.model.{js,ts}'
-    ],
-    synchronize: true,
-    logging: true,
-    charset: 'utf8mb4',
-    connectTimeout: 30000,
-    acquireTimeout: 30000,
-    extra: {
-        connectionLimit: 5
-    }
-})
-.then(connection => {
-    // Create database if it doesn't exist
-    return connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\``).then(() => {
-        app.listen(port, () => {
-            console.log('Database initialized and connected. Server listening on port ' + port);
-        });
-    });
-})
-.catch((error) => {
-    console.error('TypeORM connection error:', error);
-    // If database doesn't exist, try to create it
-    if (error.errno === 1049) {
-        console.log('Attempting to create database...');
-        const tempConnection = new (require('mysql2')).createConnection({
+// Helper function to ensure database exists
+async function ensureDatabase() {
+    return new Promise((resolve, reject) => {
+        const mysql = require('mysql2');
+        const tempConnection = mysql.createConnection({
             host,
             port: dbPort,
             user,
             password
         });
+
         tempConnection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\``, (err: any) => {
+            tempConnection.end();
             if (err) {
-                console.error('Failed to create database:', err);
-                process.exit(1);
+                reject(err);
+                return;
             }
-            console.log('Database created successfully');
-            // Restart the application
-            process.exit(0);
+            console.log('Database availability checked/created successfully');
+            resolve(true);
         });
-    } else {
+    });
+}
+
+// Start application
+async function startApp() {
+    try {
+        await ensureDatabase();
+        
+        const connection = await createConnection({
+            type: 'mysql',
+            host,
+            port: dbPort,
+            username: user,
+            password,
+            database,
+            entities: [
+                __dirname + '/**/*.model.{js,ts}'
+            ],
+            synchronize: true,
+            logging: true,
+            charset: 'utf8mb4'
+        });
+
+        app.listen(port, () => {
+            console.log('Database connected and server listening on port ' + port);
+        });
+    } catch (error) {
+        console.error('Application startup failed:', error);
         process.exit(1);
     }
-});
+}
+
+startApp();
