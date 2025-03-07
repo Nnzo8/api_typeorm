@@ -23,7 +23,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 
 // Set port
-const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : 4000;
+const port = process.env.NODE_ENV === 'production' 
+    ? Number(process.env.PORT || 80) 
+    : 4000;
 
 // Initialize database and start server
 const { host, port: dbPort, user, password, database } = config.database;
@@ -71,13 +73,17 @@ async function startApp() {
             charset: 'utf8mb4'
         });
 
-        app.listen(port, () => {
+        // Update this line to include the binding address and error handling
+        const server = app.listen(port, '0.0.0.0', () => {
             console.log('Database connected and server listening on port ' + port);
+        });
+
+        server.on('error', (err) => {
+            console.error('Failed to start server:', err);
         });
     } catch (error) {
         console.error('Application startup failed:', error);
         process.exit(1);
     }
 }
-
 startApp();

@@ -23,16 +23,15 @@ function getAll(req: Request, res: Response, next: NextFunction): void {
 
 // Fetch a user by ID
 function getById(req: Request, res: Response, next: NextFunction): void {
-  userService.getById(parseInt(req.params.id))
+  userService.getById(Number(req.params.id))
     .then(user => res.json(user))
     .catch(next);
 }
 
-// Create a new user
 function create(req: Request, res: Response, next: NextFunction): void {
   userService.create(req.body)
-    .then(() => res.json({ message: 'User created' }))
-    .catch(next);
+      .then(() => res.json({ message: 'User created successfully' }))
+      .catch(next);
 }
 
 // Update an existing user
